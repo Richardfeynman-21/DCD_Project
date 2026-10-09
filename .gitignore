@@ -1,0 +1,51 @@
+# =========================================================================
+# Vivado / Xilinx Git Ignore File
+# =========================================================================
+
+# Vivado project runs and generated outputs
+*.runs/
+*.cache/
+*.hw/
+*.sim/
+*.ip_user_files/
+.Xil/
+
+# Vivado log, journal, and trace files
+*.jou
+*.log
+*.str
+*.pb
+*.wdb
+*.vcd
+
+# Bitstream and checkpoint files (generate from source)
+*.bit
+*.bin
+*.dcp
+*.rbt
+*.ncd
+*.pad
+*.par
+*.bgn
+
+# Simulation artifacts
+xsim.dir/
+webtalk*.xml
+webtalk*.log
+usage_statistics_webtalk.html
+usage_statistics_webtalk.xml
+
+# Temporary and swap files
+*~
+*.swp
+*.swo
+*.bak
+.DS_Store
+Thumbs.db
+
+# Project locks
+*.lck
+
+# System / OS files
+.vscode/
+.idea/
