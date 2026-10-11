@@ -161,8 +161,15 @@ module top #(
     reg [6:0]  y_shift    [0:PIPE_DEPTH-1];
     integer p;
 
+    reg [13:0] shadow_addr;
+    reg [6:0]  bbox_x;
+    reg [6:0]  bbox_y;
+
     always @(posedge clk) begin
         if (rst) begin
+            shadow_addr <= 14'd0;
+            bbox_x      <= 7'd0;
+            bbox_y      <= 7'd0;
             for (p = 0; p < PIPE_DEPTH; p = p + 1) begin
                 addr_shift[p] <= 14'd0;
                 x_shift[p]    <= 7'd0;
@@ -177,19 +184,11 @@ module top #(
                 x_shift[p]    <= x_shift[p-1];
                 y_shift[p]    <= y_shift[p-1];
             end
+            // Synchronous taps: 132-cycle latency for shadow_suppress, 133-cycle for bbox_centroid
+            shadow_addr <= addr_shift[131];
+            bbox_x      <= x_shift[132];
+            bbox_y      <= y_shift[132];
         end
-    end
-
-    // Tap for shadow_suppress: Latency 132 (relative to rd_addr_d1)
-    reg [13:0] shadow_addr;
-    // Tap for bbox_centroid: Latency 133 (relative to rd_addr_d1) perfectly aligns pixel coordinates
-    reg [6:0]  bbox_x;
-    reg [6:0]  bbox_y;
-
-    always @(*) begin
-        shadow_addr = addr_shift[132];
-        bbox_x      = x_shift[133];
-        bbox_y      = y_shift[133];
     end
 
     // =========================================================================

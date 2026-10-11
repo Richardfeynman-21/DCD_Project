@@ -10,21 +10,19 @@ module line_buffer #(
     input  wire             pixel_valid,
     output reg  [DEPTH-1:0] pixel_out
 );
-    reg [DEPTH-1:0] buffer [0:WIDTH-1];
+    reg [DEPTH-1:0] buffer [0:WIDTH-2];
     integer i;
-
-    always @(*) begin
-        pixel_out = buffer[WIDTH-1];
-    end
 
     always @(posedge clk) begin
         if (rst) begin
-            for (i = 0; i < WIDTH; i = i + 1)
+            pixel_out <= {DEPTH{1'b0}};
+            for (i = 0; i < WIDTH-1; i = i + 1)
                 buffer[i] <= {DEPTH{1'b0}};
         end else if (pixel_valid) begin
             buffer[0] <= pixel_in;
-            for (i = 1; i < WIDTH; i = i + 1)
+            for (i = 1; i < WIDTH-1; i = i + 1)
                 buffer[i] <= buffer[i-1];
+            pixel_out <= buffer[WIDTH-2];
         end
     end
 endmodule

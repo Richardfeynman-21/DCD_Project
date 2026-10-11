@@ -67,12 +67,12 @@ module sobel_edge_detect (
             gy <= 12'sd0;
         end else begin
             // Gx = (p02 + 2*p12 + p22) - (p00 + 2*p10 + p20)
-            gx <= ($signed({4'd0, p02}) + ($signed({4'd0, p12}) <<< 1) + $signed({4'd0, p22})) -
-                  ($signed({4'd0, p00}) + ($signed({4'd0, p10}) <<< 1) + $signed({4'd0, p20}));
+            gx <= ($signed({4'd0, p02}) + ($signed({4'd0, p12}) * 2) + $signed({4'd0, p22})) -
+                  ($signed({4'd0, p00}) + ($signed({4'd0, p10}) * 2) + $signed({4'd0, p20}));
 
             // Gy = (p20 + 2*p21 + p22) - (p00 + 2*p01 + p02)
-            gy <= ($signed({4'd0, p20}) + ($signed({4'd0, p21}) <<< 1) + $signed({4'd0, p22})) -
-                  ($signed({4'd0, p00}) + ($signed({4'd0, p01}) <<< 1) + $signed({4'd0, p02}));
+            gy <= ($signed({4'd0, p20}) + ($signed({4'd0, p21}) * 2) + $signed({4'd0, p22})) -
+                  ($signed({4'd0, p00}) + ($signed({4'd0, p01}) * 2) + $signed({4'd0, p02}));
         end
     end
 
