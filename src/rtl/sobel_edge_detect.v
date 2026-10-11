@@ -67,19 +67,19 @@ module sobel_edge_detect (
             gy <= 12'sd0;
         end else begin
             // Gx = (p02 + 2*p12 + p22) - (p00 + 2*p10 + p20)
-            gx <= ($signed({4'd0, p02}) + ($signed({4'd0, p12}) * 2) + $signed({4'd0, p22})) -
-                  ($signed({4'd0, p00}) + ($signed({4'd0, p10}) * 2) + $signed({4'd0, p20}));
+            gx <= ($signed({4'd0, p02}) + $signed({3'd0, p12, 1'b0}) + $signed({4'd0, p22})) -
+                  ($signed({4'd0, p00}) + $signed({3'd0, p10, 1'b0}) + $signed({4'd0, p20}));
 
             // Gy = (p20 + 2*p21 + p22) - (p00 + 2*p01 + p02)
-            gy <= ($signed({4'd0, p20}) + ($signed({4'd0, p21}) * 2) + $signed({4'd0, p22})) -
-                  ($signed({4'd0, p00}) + ($signed({4'd0, p01}) * 2) + $signed({4'd0, p02}));
+            gy <= ($signed({4'd0, p20}) + $signed({3'd0, p21, 1'b0}) + $signed({4'd0, p22})) -
+                  ($signed({4'd0, p00}) + $signed({3'd0, p01, 1'b0}) + $signed({4'd0, p02}));
         end
     end
 
     // Pipeline Stage 2: Manhattan Gradient Magnitude (|Gx| + |Gy|) and Thresholding
-    wire [11:0] abs_gx = (gx < 0) ? -gx : gx;
-    wire [11:0] abs_gy = (gy < 0) ? -gy : gy;
-    wire [12:0] grad_sum = abs_gx + abs_gy;
+    wire [11:0] abs_gx = (gx < 12'sd0) ? -gx : gx;
+    wire [11:0] abs_gy = (gy < 12'sd0) ? -gy : gy;
+    wire [12:0] grad_sum = {1'b0, abs_gx} + {1'b0, abs_gy};
 
     always @(posedge clk) begin
         if (rst) begin

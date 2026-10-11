@@ -117,13 +117,13 @@ module top #(
                 end
 
                 S_SCAN: begin
-                    if (rd_addr == TOTAL_PIXELS - 1) begin
+                    if (rd_addr == TOTAL_PIXELS[13:0] - 14'd1) begin
                         scan_valid  <= 1'b0;
                         scan_state  <= S_DRAIN;
-                        drain_count <= PIPE_DEPTH;
+                        drain_count <= PIPE_DEPTH[8:0];
                     end else begin
                         rd_addr <= rd_addr + 14'd1;
-                        if (scan_x == FRAME_WIDTH - 1) begin
+                        if (scan_x == FRAME_WIDTH[6:0] - 7'd1) begin
                             scan_x <= 7'd0;
                             scan_y <= scan_y + 7'd1;
                         end else begin
@@ -289,8 +289,10 @@ module top #(
     // =========================================================================
     // 9. Lightweight Rule-Based Classifier (Novelty #4: Multi-Feature Decision)
     // =========================================================================
-    wire [6:0] bbox_w = (pixel_count > 14'd0 && x_max >= x_min) ? (x_max - x_min + 7'd1) : 7'd0;
-    wire [6:0] bbox_h = (pixel_count > 14'd0 && y_max >= y_min) ? (y_max - y_min + 7'd1) : 7'd0;
+    wire [7:0] bbox_w = (pixel_count > 14'd0 && x_max >= x_min) ?
+                        ({1'b0, x_max} - {1'b0, x_min} + 8'd1) : 8'd0;
+    wire [7:0] bbox_h = (pixel_count > 14'd0 && y_max >= y_min) ?
+                        ({1'b0, y_max} - {1'b0, y_min} + 8'd1) : 8'd0;
     wire       is_animal;
 
     classifier classifier_inst (

@@ -17,6 +17,13 @@ module shadow_suppress #(
     // 9216 x 3-bit memory for pixel persistence history (synthesizes into 1 BRAM)
     (* ram_style = "block" *) reg [2:0] history_mem [0:TOTAL_PIXELS-1];
 
+    integer init_i;
+    initial begin
+        for (init_i = 0; init_i < TOTAL_PIXELS; init_i = init_i + 1) begin
+            history_mem[init_i] = 3'd0;
+        end
+    end
+
     reg [13:0] addr_pipe1;
     reg        fused_pipe1;
     reg        valid_pipe1;

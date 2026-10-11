@@ -18,6 +18,14 @@ module frame_memory #(
     (* ram_style = "block" *) reg [7:0] bank0 [0:TOTAL_PIXELS-1];
     (* ram_style = "block" *) reg [7:0] bank1 [0:TOTAL_PIXELS-1];
 
+    integer init_i;
+    initial begin
+        for (init_i = 0; init_i < TOTAL_PIXELS; init_i = init_i + 1) begin
+            bank0[init_i] = 8'd0;
+            bank1[init_i] = 8'd0;
+        end
+    end
+
     reg active_bank;     // Points to bank holding current completed frame
     reg write_bank;      // Points to bank currently receiving incoming pixels
     reg has_prev_frame;  // Becomes 1 after the first full frame is captured
@@ -43,7 +51,7 @@ module frame_memory #(
 
     // Output assignments based on active bank
     assign curr_pixel = (active_bank == 1'b0) ? rd_data_bank0 : rd_data_bank1;
-    assign prev_pixel = (!has_prev_frame) ? 8'd0 :
+    assign prev_pixel = (!has_prev_frame) ? curr_pixel :
                         (active_bank == 1'b0) ? rd_data_bank1 : rd_data_bank0;
 
     // Buffer management and handshaking
@@ -55,14 +63,12 @@ module frame_memory #(
             has_prev_frame <= 1'b0;
         end else begin
             frame_ready <= 1'b0;
-            if (load_en && (pixel_addr == TOTAL_PIXELS - 1)) begin
-                active_bank    <= write_bank;
-                write_bank     <= ~write_bank;
-                frame_ready    <= 1'b1;
-                if (has_prev_frame == 1'b0 && active_bank == write_bank) begin
-                    // After first complete frame
-                    has_prev_frame <= 1'b1;
-                end else begin
+            if (load_en && (pixel_addr == TOTAL_PIXELS[13:0] - 14'd1)) begin
+                active_bank <= write_bank;
+                write_bank  <= ~write_bank;
+                frame_ready <= 1'b1;
+                if (write_bank != 1'b0) begin
+                    // After second frame arrives, both ping-pong banks contain valid frames
                     has_prev_frame <= 1'b1;
                 end
             end

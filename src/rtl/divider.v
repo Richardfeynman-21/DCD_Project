@@ -41,7 +41,7 @@ module divider #(
                 div      <= dividend;
                 dvsr     <= divisor;
                 quotient <= {WIDTH_N{1'b0}};
-                step     <= WIDTH_N;
+                step     <= WIDTH_N[4:0];
                 busy     <= 1'b1;
                 done     <= 1'b0;
             end
