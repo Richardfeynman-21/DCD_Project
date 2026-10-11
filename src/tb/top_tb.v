@@ -2,7 +2,7 @@
 
 module top_tb;
 
-    reg        clk;
+    reg        clk = 1'b0;
     reg        rst;
     reg        load_en;
     reg [7:0]  pixel_in;

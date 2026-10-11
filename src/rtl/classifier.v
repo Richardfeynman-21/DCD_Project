@@ -27,14 +27,14 @@ module classifier (
 
     // Rule 4: Aspect ratio check (both horizontal and vertical elongation bounds)
     // width*16 <= max_aspect_ratio * height  AND  height*16 <= max_aspect_ratio * width
-    wire [13:0] aspect_w_lhs = {7'd0, width} * 14'd16;
+    wire [14:0] aspect_w_lhs = {8'd0, width} * 15'd16;
     wire [14:0] aspect_w_rhs = {7'd0, max_aspect_ratio} * {8'd0, height};
-    wire [13:0] aspect_h_lhs = {7'd0, height} * 14'd16;
+    wire [14:0] aspect_h_lhs = {8'd0, height} * 15'd16;
     wire [14:0] aspect_h_rhs = {7'd0, max_aspect_ratio} * {8'd0, width};
 
     wire aspect_ok = (width > 7'd0) && (height > 7'd0) &&
-                     (aspect_w_lhs <= aspect_w_rhs[13:0]) &&
-                     (aspect_h_lhs <= aspect_h_rhs[13:0]);
+                     (aspect_w_lhs <= aspect_w_rhs) &&
+                     (aspect_h_lhs <= aspect_h_rhs);
 
     // Rule 5: Fill ratio check: pixel_count * 4 >= width * height (at least 25% box occupancy)
     wire [15:0] count_x4  = {2'd0, pixel_count} << 2;
