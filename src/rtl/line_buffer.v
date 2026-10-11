@@ -8,12 +8,14 @@ module line_buffer #(
     input  wire             rst,
     input  wire [DEPTH-1:0] pixel_in,
     input  wire             pixel_valid,
-    output wire [DEPTH-1:0] pixel_out
+    output reg  [DEPTH-1:0] pixel_out
 );
     reg [DEPTH-1:0] buffer [0:WIDTH-1];
     integer i;
 
-    assign pixel_out = buffer[WIDTH-1];
+    always @(*) begin
+        pixel_out = buffer[WIDTH-1];
+    end
 
     always @(posedge clk) begin
         if (rst) begin

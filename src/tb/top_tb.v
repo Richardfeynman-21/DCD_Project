@@ -71,7 +71,7 @@ module top_tb;
     // Task to load a synthetic video frame
     task load_synthetic_frame(
         input integer frame_num,
-        input [127:0] description,
+        input [511:0] description,
         input integer obj_enable,
         input integer obj_x,
         input integer obj_y,

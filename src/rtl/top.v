@@ -181,10 +181,16 @@ module top #(
     end
 
     // Tap for shadow_suppress: Latency 132 (relative to rd_addr_d1)
-    wire [13:0] shadow_addr = addr_shift[132];
+    reg [13:0] shadow_addr;
     // Tap for bbox_centroid: Latency 133 (relative to rd_addr_d1) perfectly aligns pixel coordinates
-    wire [6:0]  bbox_x      = x_shift[133];
-    wire [6:0]  bbox_y      = y_shift[133];
+    reg [6:0]  bbox_x;
+    reg [6:0]  bbox_y;
+
+    always @(*) begin
+        shadow_addr = addr_shift[132];
+        bbox_x      = x_shift[133];
+        bbox_y      = y_shift[133];
+    end
 
     // =========================================================================
     // 4. Sobel Edge Detection (Novelty #1: Parallel Pipelined 3x3 Filter)
