@@ -1,0 +1,128 @@
+{
+  "base_paper": {
+    "TP": 39,
+    "FP": 58,
+    "TN": 19,
+    "FN": 14,
+    "Accuracy": 44.62,
+    "Precision": 40.21,
+    "Recall": 73.58,
+    "Specificity": 24.68,
+    "F1_Score": 52.0,
+    "dataset_breakdown": [
+      {
+        "dataset": "Camera Trap Wildlife (Real)",
+        "ground_truth": 1,
+        "total_frames": 29,
+        "TP": 15,
+        "FP": 0,
+        "TN": 0,
+        "FN": 14,
+        "Accuracy": 51.72
+      },
+      {
+        "dataset": "Synthetic Animal Walk (Positive Control)",
+        "ground_truth": 1,
+        "total_frames": 24,
+        "TP": 24,
+        "FP": 0,
+        "TN": 0,
+        "FN": 0,
+        "Accuracy": 100.0
+      },
+      {
+        "dataset": "Swaying Trees & Foliage (Negative)",
+        "ground_truth": 0,
+        "total_frames": 29,
+        "TP": 0,
+        "FP": 29,
+        "TN": 0,
+        "FN": 0,
+        "Accuracy": 0.0
+      },
+      {
+        "dataset": "Vehicles & Traffic (Negative)",
+        "ground_truth": 0,
+        "total_frames": 29,
+        "TP": 0,
+        "FP": 29,
+        "TN": 0,
+        "FN": 0,
+        "Accuracy": 0.0
+      },
+      {
+        "dataset": "Static Background (Negative)",
+        "ground_truth": 0,
+        "total_frames": 19,
+        "TP": 0,
+        "FP": 0,
+        "TN": 19,
+        "FN": 0,
+        "Accuracy": 100.0
+      }
+    ]
+  },
+  "our_novelty": {
+    "TP": 0,
+    "FP": 0,
+    "TN": 77,
+    "FN": 53,
+    "Accuracy": 59.23,
+    "Precision": 0,
+    "Recall": 0.0,
+    "Specificity": 100.0,
+    "F1_Score": 0,
+    "dataset_breakdown": [
+      {
+        "dataset": "Camera Trap Wildlife (Real)",
+        "ground_truth": 1,
+        "total_frames": 29,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 29,
+        "Accuracy": 0.0
+      },
+      {
+        "dataset": "Synthetic Animal Walk (Positive Control)",
+        "ground_truth": 1,
+        "total_frames": 24,
+        "TP": 0,
+        "FP": 0,
+        "TN": 0,
+        "FN": 24,
+        "Accuracy": 0.0
+      },
+      {
+        "dataset": "Swaying Trees & Foliage (Negative)",
+        "ground_truth": 0,
+        "total_frames": 29,
+        "TP": 0,
+        "FP": 0,
+        "TN": 29,
+        "FN": 0,
+        "Accuracy": 100.0
+      },
+      {
+        "dataset": "Vehicles & Traffic (Negative)",
+        "ground_truth": 0,
+        "total_frames": 29,
+        "TP": 0,
+        "FP": 0,
+        "TN": 29,
+        "FN": 0,
+        "Accuracy": 100.0
+      },
+      {
+        "dataset": "Static Background (Negative)",
+        "ground_truth": 0,
+        "total_frames": 19,
+        "TP": 0,
+        "FP": 0,
+        "TN": 19,
+        "FN": 0,
+        "Accuracy": 100.0
+      }
+    ]
+  }
+}

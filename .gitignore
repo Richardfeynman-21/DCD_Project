@@ -49,3 +49,11 @@ Thumbs.db
 # System / OS files
 .vscode/
 .idea/
+
+# Video test datasets
+test_videos/*.webm
+test_videos/*.mp4
+test_results/edge_detection/*.png
+__pycache__/
+*.pyc
+test_videos/

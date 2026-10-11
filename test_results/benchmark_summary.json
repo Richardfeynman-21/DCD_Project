@@ -1,0 +1,39 @@
+{
+  "edge_detection": {
+    "TP": 6205,
+    "FP": 0,
+    "FN": 0,
+    "TN": 2615,
+    "Accuracy": 100.0,
+    "Precision": 100.0,
+    "Recall": 100.0,
+    "F1_Score": 100.0,
+    "IoU": 100.0,
+    "MSE": 0.0,
+    "PSNR_dB": 160.17
+  },
+  "classification_benchmark": {
+    "base_paper": {
+      "TP": 45,
+      "FP": 44,
+      "TN": 11,
+      "FN": 0,
+      "Accuracy": 56.0,
+      "Precision": 50.56,
+      "Recall": 100.0,
+      "Specificity": 20.0,
+      "F1_Score": 67.16
+    },
+    "our_novelty": {
+      "TP": 43,
+      "FP": 10,
+      "TN": 45,
+      "FN": 2,
+      "Accuracy": 88.0,
+      "Precision": 81.13,
+      "Recall": 95.56,
+      "Specificity": 81.82,
+      "F1_Score": 87.76
+    }
+  }
+}
