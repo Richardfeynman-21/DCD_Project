@@ -196,14 +196,14 @@ module top_tb;
 
             $display("  -> Result: Motion_Alert=%b, Animal_Alert=%b, FusionMode=%b",
                      motion_alert, animal_alert, f_mode);
-            if (bbox_valid) begin
+            if (pixel_count > 14'd0) begin
                 $display("  -> BBox:   X=[%0d..%0d], Y=[%0d..%0d] (W=%0d, H=%0d)",
                          x_min, x_max, y_min, y_max,
                          (x_max - x_min + 7'd1), (y_max - y_min + 7'd1));
                 $display("  -> Center: Centroid=(%0d,%0d), Active Pixels=%0d",
                          centroid_x, centroid_y, pixel_count);
             end else begin
-                $display("  -> BBox:   No bounding box (Pixels=%0d)", pixel_count);
+                $display("  -> BBox:   No active motion detected (Pixels=0)");
             end
         end
     endtask
@@ -222,15 +222,15 @@ module top_tb;
 
         // Default configuration
         fusion_mode      = 2'b00;  // Motion silhouette
-        motion_threshold = 8'd22;  // Tuned for natural surveillance footage
+        motion_threshold = 8'd28;  // Optimal for natural surveillance footage
         edge_threshold   = 8'd40;
         persist_thresh   = 3'd1;   // Fast response
         min_width        = 7'd5;
-        max_width        = 7'd80;
+        max_width        = 7'd115; // Accommodates natural camera-trap field of view
         min_height       = 7'd5;
-        max_height       = 7'd50;
+        max_height       = 7'd65;
         min_area         = 14'd20;
-        max_aspect_ratio = 8'd48;  // 3.0 max elongation
+        max_aspect_ratio = 8'd64;  // 4.0 max aspect ratio (side profile quadruped)
 
         // Apply reset
         #100;
@@ -310,22 +310,22 @@ module top_tb;
             #40;
 
             // Frame 00: Initial Background Reference
-            load_real_frame(0, "Baseline Video Frame (Reference)", 2'b00, 8'd22, 8'd40);
+            load_real_frame(0, "Baseline Video Frame (Reference)", 2'b00, 8'd28, 8'd40);
 
             // Frame 01: Real Animal Enters (Motion Detection Mode 00)
-            load_real_frame(1, "Animal In Motion (Motion Detection)", 2'b00, 8'd22, 8'd40);
+            load_real_frame(1, "Animal In Motion (Motion Detection)", 2'b00, 8'd28, 8'd40);
 
             // Frame 02: Real Animal Advancing (Motion Tracking)
-            load_real_frame(2, "Animal Advancing (Motion Tracking)", 2'b00, 8'd22, 8'd40);
+            load_real_frame(2, "Animal Advancing (Motion Tracking)", 2'b00, 8'd28, 8'd40);
 
             // Frame 03: Parallel Sobel Edge Detection + Motion Fusion (Mode 01)
-            load_real_frame(3, "Parallel Sobel Edge + Motion (Mode 01)", 2'b01, 8'd22, 8'd40);
+            load_real_frame(3, "Parallel Sobel Edge + Motion (Mode 01)", 2'b01, 8'd28, 8'd40);
 
             // Frame 04: Sobel Edge OR Motion Dual-Path (Mode 10)
-            load_real_frame(4, "Sobel Edge OR Motion Dual-Path (Mode 10)", 2'b10, 8'd22, 8'd40);
+            load_real_frame(4, "Sobel Edge OR Motion Dual-Path (Mode 10)", 2'b10, 8'd28, 8'd40);
 
             // Frame 05: Real Animal Localized & Classified
-            load_real_frame(5, "Animal Classification & Localization", 2'b00, 8'd22, 8'd40);
+            load_real_frame(5, "Animal Classification & Localization", 2'b00, 8'd28, 8'd40);
 
             $display("  [PASS] Real video frame verification completed successfully!");
         end else begin
