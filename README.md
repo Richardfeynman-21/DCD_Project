@@ -9,22 +9,20 @@ Based on **Abhishek & Megalingam (2025)** with **4 Novelty Architectural Improve
 
 ---
 
-## 🎬 Testing with Real Videos & Frame Sequences
+## 🎬 Testing with Real Video & Frame Sequences
 
-The repository includes real surveillance test video datasets and pre-extracted frame sequences:
-- `test_videos/wild_deer.mp4` & `test_videos/frames_deer/` (Real deer moving across natural habitat, 35 frames)
-- `test_videos/camera_trap_wildlife.mp4` & `test_videos/frames_wildlife/` (Camera-trap surveillance, 30 frames)
-- `test_videos/swaying_tree.mp4` & `test_videos/frames_tree/` (Environmental wind/foliage negative test)
-- `test_videos/traffic.mp4` & `test_videos/frames_traffic/` (Vehicle motion negative test)
+The repository includes the real wildlife camera trap video dataset and pre-extracted frame sequences:
+- `test_videos/camera_trap_wildlife.mp4` (Surveillance camera-trap footage)
+- `test_videos/frames_wildlife/` (30 frames in both 128x72 `.mem` hex and `.png` format)
 
-### Converting Any Real Video into Simulation Frames:
+### Converting Any Other Real Video into Simulation Frames:
 You can supply **any** video file (`.mp4`, `.avi`, `.webm`, etc.) and convert it into 128x72 FPGA frames:
 ```bash
 python scripts/video_to_frames.py <path_to_video.mp4> [output_directory] [num_frames]
 ```
 Example:
 ```bash
-python scripts/video_to_frames.py test_videos/wild_deer.mp4 test_videos/frames_deer 35
+python scripts/video_to_frames.py test_videos/camera_trap_wildlife.mp4 test_videos/frames_wildlife 30
 ```
 
 ---
@@ -36,7 +34,7 @@ python scripts/video_to_frames.py test_videos/wild_deer.mp4 test_videos/frames_d
 2. In the Vivado **Flow Navigator** on the left panel, click **Run Simulation** -> **Run Behavioral Simulation**.
 3. The simulation automatically runs:
    - **Part 1 (Synthetic Test Cases)**: Tests static background, animal entry, movement tracking, noise rejection, and edge fusion.
-   - **Part 2 (Real Video Frame Sequence)**: Streams real video frames (`test_videos/frames_deer`) directly into the FPGA hardware model and prints frame-by-frame detection status, bounding box coordinates $[X_{min}..X_{max}, Y_{min}..Y_{max}]$, centroid $(X, Y)$, and classification alerts in the Tcl Console!
+   - **Part 2 (Real Video Frame Sequence)**: Streams real video frames (`test_videos/frames_wildlife`) directly into the FPGA hardware model and prints frame-by-frame detection status, bounding box coordinates $[X_{min}..X_{max}, Y_{min}..Y_{max}]$, centroid $(X, Y)$, and classification alerts in the Tcl Console!
 
 ### Option B: Windows 1-Click Simulation Runner
 Simply double-click:
@@ -93,11 +91,7 @@ DCD_Project/
 │   │   └── top_tb.v              # Master simulation testbench (Synthetic + Real Video)
 │   └── constrs/                  # FPGA pin and timing constraints (.xdc)
 ├── test_videos/                  # Real surveillance video clips & frame sequences
-│   ├── wild_deer.mp4             # Real deer walking in natural habitat
 │   ├── camera_trap_wildlife.mp4  # Camera trap video
-│   ├── swaying_tree.mp4          # Foliage/wind negative test
-│   ├── traffic.mp4               # Vehicles/traffic negative test
-│   ├── frames_deer/              # 35 frames (.mem hex & .png)
 │   └── frames_wildlife/          # 30 frames (.mem hex & .png)
 └── vivado_project/               # Local Vivado project (.xpr)
 ```

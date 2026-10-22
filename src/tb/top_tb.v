@@ -79,30 +79,30 @@ module top_tb;
     task detect_test_video_path;
         begin
             real_frames_available = 0;
-            // 1. Vivado GUI default xsim directory (5 levels up to repo root)
-            resolved_frame_dir = "../../../../../test_videos/frames_deer";
-            dir_check_fp = $fopen("../../../../../test_videos/frames_deer/frame_000.mem", "r");
+            // 1. Check current directory / project root first
+            resolved_frame_dir = "test_videos/frames_wildlife";
+            dir_check_fp = $fopen("test_videos/frames_wildlife/frame_000.mem", "r");
             if (dir_check_fp != 0) begin
                 $fclose(dir_check_fp);
                 real_frames_available = 1;
             end else begin
-                // 2. 4 levels up
-                resolved_frame_dir = "../../../../test_videos/frames_deer";
-                dir_check_fp = $fopen("../../../../test_videos/frames_deer/frame_000.mem", "r");
+                // 2. Check 5 levels up (Vivado GUI default xsim directory: vivado_project/DCD_Project.sim/sim_1/behav/xsim)
+                resolved_frame_dir = "../../../../../test_videos/frames_wildlife";
+                dir_check_fp = $fopen("../../../../../test_videos/frames_wildlife/frame_000.mem", "r");
                 if (dir_check_fp != 0) begin
                     $fclose(dir_check_fp);
                     real_frames_available = 1;
                 end else begin
-                    // 3. Project root (batch simulation)
-                    resolved_frame_dir = "test_videos/frames_deer";
-                    dir_check_fp = $fopen("test_videos/frames_deer/frame_000.mem", "r");
+                    // 3. Check 4 levels up
+                    resolved_frame_dir = "../../../../test_videos/frames_wildlife";
+                    dir_check_fp = $fopen("../../../../test_videos/frames_wildlife/frame_000.mem", "r");
                     if (dir_check_fp != 0) begin
                         $fclose(dir_check_fp);
                         real_frames_available = 1;
                     end else begin
-                        // 4. One level up (scripts directory)
-                        resolved_frame_dir = "../test_videos/frames_deer";
-                        dir_check_fp = $fopen("../test_videos/frames_deer/frame_000.mem", "r");
+                        // 4. Check 1 level up (scripts directory)
+                        resolved_frame_dir = "../test_videos/frames_wildlife";
+                        dir_check_fp = $fopen("../test_videos/frames_wildlife/frame_000.mem", "r");
                         if (dir_check_fp != 0) begin
                             $fclose(dir_check_fp);
                             real_frames_available = 1;
@@ -329,7 +329,7 @@ module top_tb;
 
             $display("  [PASS] Real video frame verification completed successfully!");
         end else begin
-            $display("  [NOTE] Test video directory 'test_videos/frames_deer' was not found");
+            $display("  [NOTE] Test video directory 'test_videos/frames_wildlife' was not found");
             $display("         in default search paths. Synthetic test suite passed.");
         end
 

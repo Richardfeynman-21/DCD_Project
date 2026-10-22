@@ -63,6 +63,7 @@ if { [get_files -quiet -filter {NAME =~ "*top.v"}] != "" } {
 if { [get_files -quiet -filter {NAME =~ "*top_tb.v"}] != "" } {
     set_property top top_tb [get_filesets sim_1]
     update_compile_order -fileset sim_1
+    set_property -name {xsim.simulate.runtime} -value {all} -objects [get_filesets sim_1]
 }
 
 puts "INFO: Vivado project ${proj_name} created successfully!"

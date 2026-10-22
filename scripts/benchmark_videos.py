@@ -13,10 +13,23 @@ import json
 
 def extract_frames_from_video(video_path, out_dir, num_frames=30, start_frame=20):
     os.makedirs(out_dir, exist_ok=True)
+    frames = []
+
+    # If frames already exist in out_dir, load them directly
+    if os.path.exists(os.path.join(out_dir, "frame_000.png")):
+        for i in range(num_frames):
+            p = os.path.join(out_dir, f"frame_{i:03d}.png")
+            if os.path.exists(p):
+                frames.append(cv2.imread(p, cv2.IMREAD_GRAYSCALE))
+        if len(frames) >= num_frames:
+            return frames
+
+    if not os.path.exists(video_path):
+        return frames
+
     cap = cv2.VideoCapture(video_path)
     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     
-    frames = []
     count = 0
     while count < num_frames:
         ret, frame = cap.read()
@@ -165,21 +178,15 @@ def run_benchmark():
     
     print("[1/3] Preparing multi-scenario video datasets...")
     # Real wildlife camera trap (positive)
-    wildlife_frames = extract_frames_from_video("test_videos/camera_trap_wildlife.webm", "test_videos/frames_wildlife", num_frames=30, start_frame=20)
-    # Swaying tree foliage (negative - shadow/wind test)
-    tree_frames = extract_frames_from_video("test_videos/swaying_tree.webm", "test_videos/frames_tree", num_frames=30, start_frame=15)
-    # Traffic / Vehicles (negative - non-animal motion)
-    traffic_frames = extract_frames_from_video("test_videos/traffic.webm", "test_videos/frames_traffic", num_frames=30, start_frame=10)
+    wildlife_frames = extract_frames_from_video("test_videos/camera_trap_wildlife.mp4", "test_videos/frames_wildlife", num_frames=30, start_frame=20)
     # Static background (negative)
-    static_frames = [wildlife_frames[0].copy() for _ in range(20)]
+    static_frames = [wildlife_frames[0].copy() for _ in range(20)] if wildlife_frames else []
     # Synthetic wildlife walk (positive control)
     synth_frames = generate_synthetic_animal_sequence(num_frames=25)
     
     test_datasets = [
         {"name": "Camera Trap Wildlife (Real)", "frames": wildlife_frames, "ground_truth": 1},
         {"name": "Synthetic Animal Walk (Positive Control)", "frames": synth_frames, "ground_truth": 1},
-        {"name": "Swaying Trees & Foliage (Negative)", "frames": tree_frames, "ground_truth": 0},
-        {"name": "Vehicles & Traffic (Negative)", "frames": traffic_frames, "ground_truth": 0},
         {"name": "Static Background (Negative)", "frames": static_frames, "ground_truth": 0}
     ]
     

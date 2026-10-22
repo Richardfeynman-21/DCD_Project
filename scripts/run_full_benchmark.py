@@ -15,7 +15,7 @@ import json
 
 def run_edge_test():
     os.makedirs("test_results/edge_detection", exist_ok=True)
-    frame_path = "test_videos/frames_deer/frame_010.png"
+    frame_path = "test_videos/frames_wildlife/frame_010.png"
     if os.path.exists(frame_path):
         img = cv2.imread(frame_path, cv2.IMREAD_GRAYSCALE)
     else:

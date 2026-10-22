@@ -116,8 +116,8 @@ def evaluate_edge_detection(hw_edge, gt_edge, hw_mag, gt_mag):
 def main():
     os.makedirs("test_results/edge_detection", exist_ok=True)
     
-    # Load sample extracted deer frame
-    frame_path = "test_videos/frames_deer/frame_010.png"
+    # Load sample extracted wildlife frame
+    frame_path = "test_videos/frames_wildlife/frame_010.png"
     if not os.path.exists(frame_path):
         print(f"Error: {frame_path} does not exist. Creating synthetic frame...")
         img = np.zeros((72, 128), dtype=np.uint8) + 40

@@ -8,7 +8,7 @@ Usage:
     python scripts/video_to_frames.py <video_file> [output_dir] [num_frames] [start_frame]
 
 Examples:
-    python scripts/video_to_frames.py test_videos/wild_deer.mp4 test_videos/frames_deer 35 0
+    python scripts/video_to_frames.py test_videos/camera_trap_wildlife.mp4 test_videos/frames_wildlife 30 0
     python scripts/video_to_frames.py my_video.mp4 test_videos/frames_custom 20 10
 """
 
