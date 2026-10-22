@@ -36,10 +36,10 @@ module classifier (
                      (aspect_w_lhs <= aspect_w_rhs) &&
                      (aspect_h_lhs <= aspect_h_rhs);
 
-    // Rule 5: Fill ratio check: pixel_count * 8 >= width * height (at least 12.5% box occupancy for realistic animal silhouettes)
-    wire [16:0] count_x8  = {pixel_count, 3'b000};
+    // Rule 5: Fill ratio check: pixel_count * 16 >= width * height (at least 6.25% box occupancy for realistic animal silhouettes with limbs)
+    wire [17:0] count_x16 = {pixel_count, 4'b0000};
     wire [15:0] bbox_area = {8'd0, width} * {8'd0, height};
-    wire fill_ok   = (bbox_area > 16'd0) && (count_x8 >= {1'b0, bbox_area});
+    wire fill_ok   = (bbox_area > 16'd0) && (count_x16 >= {2'b00, bbox_area});
 
     always @(posedge clk) begin
         if (rst) begin

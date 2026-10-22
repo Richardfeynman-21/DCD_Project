@@ -275,6 +275,8 @@ module top_tb;
         end
 
         // TEST 4: Noise / Rain / Shadow Speck (2x2 pixels = 4 pixels, below min_area=20)
+        // Establish clean reference so we isolate only the 4-pixel noise speck
+        load_synthetic_frame(0, "Background Reference for Noise Test", 0, 0, 0, 0, 0);
         load_synthetic_frame(4, "Noise Speck (2x2 box, below min_area)", 1, 10, 10, 2, 2);
         if (animal_alert !== 1'b0) begin
             $display("  [ERROR] Noise speck should be classified as non-animal!");
@@ -310,22 +312,22 @@ module top_tb;
             #40;
 
             // Frame 00: Initial Background Reference
-            load_real_frame(0, "Baseline Video Frame (Reference)", 2'b00, 8'd28, 8'd40);
+            load_real_frame(0, "Baseline Video Frame (Reference)", 2'b00, 8'd35, 8'd40);
 
             // Frame 01: Real Animal Enters (Motion Detection Mode 00)
-            load_real_frame(1, "Animal In Motion (Motion Detection)", 2'b00, 8'd28, 8'd40);
+            load_real_frame(1, "Animal In Motion (Motion Detection)", 2'b00, 8'd35, 8'd40);
 
             // Frame 02: Real Animal Advancing (Motion Tracking)
-            load_real_frame(2, "Animal Advancing (Motion Tracking)", 2'b00, 8'd28, 8'd40);
+            load_real_frame(2, "Animal Advancing (Motion Tracking)", 2'b00, 8'd35, 8'd40);
 
             // Frame 03: Parallel Sobel Edge Detection + Motion Fusion (Mode 01)
-            load_real_frame(3, "Parallel Sobel Edge + Motion (Mode 01)", 2'b01, 8'd28, 8'd40);
+            load_real_frame(3, "Parallel Sobel Edge + Motion (Mode 01)", 2'b01, 8'd35, 8'd40);
 
             // Frame 04: Sobel Edge OR Motion Dual-Path (Mode 10)
-            load_real_frame(4, "Sobel Edge OR Motion Dual-Path (Mode 10)", 2'b10, 8'd28, 8'd40);
+            load_real_frame(4, "Sobel Edge OR Motion Dual-Path (Mode 10)", 2'b10, 8'd35, 8'd40);
 
             // Frame 05: Real Animal Localized & Classified
-            load_real_frame(5, "Animal Classification & Localization", 2'b00, 8'd28, 8'd40);
+            load_real_frame(5, "Animal Classification & Localization", 2'b00, 8'd35, 8'd40);
 
             $display("  [PASS] Real video frame verification completed successfully!");
         end else begin
