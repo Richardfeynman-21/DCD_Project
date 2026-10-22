@@ -1,8 +1,8 @@
 {
-  "TP": 5744,
+  "TP": 5388,
   "FP": 0,
   "FN": 0,
-  "TN": 3076,
+  "TN": 3432,
   "Accuracy": 1.0,
   "Precision": 1.0,
   "Recall": 1.0,

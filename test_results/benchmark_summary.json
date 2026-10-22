@@ -1,9 +1,9 @@
 {
   "edge_detection": {
-    "TP": 6205,
+    "TP": 5388,
     "FP": 0,
     "FN": 0,
-    "TN": 2615,
+    "TN": 3432,
     "Accuracy": 100.0,
     "Precision": 100.0,
     "Recall": 100.0,
