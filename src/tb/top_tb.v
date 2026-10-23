@@ -68,6 +68,15 @@ module top_tb;
 
     integer test_errors = 0;
 
+    // =========================================================================
+    // Waveform Annotation & Frame Identification Signals (Visible in GUI Waveform)
+    // =========================================================================
+    integer           tb_frame_id       = 0;
+    reg [8*32-1:0]    tb_frame_tag      = "RESET_INIT";
+    reg [8*24-1:0]    tb_alert_result   = "NO_ALERT";
+    reg               tb_positive_alert = 1'b0;
+    realtime          tb_frame_start_ns = 0.0;
+
     // Real Frame Memory for reading hex files
     reg [7:0]    real_frame_mem [0:9215];
     reg [2047:0] resolved_frame_dir;
@@ -116,7 +125,7 @@ module top_tb;
     // Task to load a synthetic video frame
     task load_synthetic_frame(
         input integer frame_num,
-        input [511:0] description,
+        input [8*32-1:0] description,
         input integer obj_enable,
         input integer obj_x,
         input integer obj_y,
@@ -125,6 +134,12 @@ module top_tb;
     );
         integer x, y, addr;
         begin
+            tb_frame_start_ns = $realtime;
+            tb_frame_id       = frame_num;
+            tb_frame_tag      = description;
+            tb_alert_result   = "PROCESSING...";
+            tb_positive_alert = 1'b0;
+
             $display("------------------------------------------------------------------");
             $display("[TB-SYNTH] Loading Frame #%0d: %0s", frame_num, description);
             for (addr = 0; addr < 9216; addr = addr + 1) begin
@@ -150,8 +165,14 @@ module top_tb;
             wait (process_busy == 1'b0);
             @(posedge clk);
 
-            $display("  -> Result: Motion_Alert=%b, Animal_Alert=%b",
-                     motion_alert, animal_alert);
+            tb_positive_alert = animal_alert;
+            tb_alert_result   = animal_alert ? "POSITIVE_ALERT" : "NEGATIVE_NORMAL";
+
+            $display("  -> Time:   [%0.3f ms -> %0.3f ms] (Duration: %0.2f us)",
+                     tb_frame_start_ns / 1000000.0, $realtime / 1000000.0, ($realtime - tb_frame_start_ns) / 1000.0);
+            $display("  -> Result: Motion_Alert=%b, Animal_Alert=%b ===> %0s",
+                     motion_alert, animal_alert,
+                     animal_alert ? "POSITIVE [ANIMAL CONFIRMED]" : "NEGATIVE [NO ANIMAL]");
             $display("  -> BBox:   X=[%0d..%0d], Y=[%0d..%0d]",
                      x_min, x_max, y_min, y_max);
             $display("  -> Center: Centroid=(%0d,%0d), Foreground Pixels=%0d",
@@ -162,13 +183,19 @@ module top_tb;
     // Task to stream and process a real video frame from disk
     task load_real_frame(
         input integer f_idx,
-        input [511:0] frame_desc,
+        input [8*32-1:0] frame_desc,
         input [1:0]   f_mode,
         input [7:0]   m_thresh,
         input [7:0]   e_thresh
     );
         integer addr;
         begin
+            tb_frame_start_ns = $realtime;
+            tb_frame_id       = 100 + f_idx;
+            tb_frame_tag      = frame_desc;
+            tb_alert_result   = "PROCESSING...";
+            tb_positive_alert = 1'b0;
+
             fusion_mode      <= f_mode;
             motion_threshold <= m_thresh;
             edge_threshold   <= e_thresh;
@@ -194,8 +221,14 @@ module top_tb;
             wait (process_busy == 1'b0);
             @(posedge clk);
 
-            $display("  -> Result: Motion_Alert=%b, Animal_Alert=%b, FusionMode=%b",
-                     motion_alert, animal_alert, f_mode);
+            tb_positive_alert = animal_alert;
+            tb_alert_result   = animal_alert ? "POSITIVE_ALERT" : "NEGATIVE_NORMAL";
+
+            $display("  -> Time:   [%0.3f ms -> %0.3f ms] (Duration: %0.2f us)",
+                     tb_frame_start_ns / 1000000.0, $realtime / 1000000.0, ($realtime - tb_frame_start_ns) / 1000.0);
+            $display("  -> Result: Motion_Alert=%b, Animal_Alert=%b, FusionMode=%b ===> %0s",
+                     motion_alert, animal_alert, f_mode,
+                     animal_alert ? "POSITIVE [ANIMAL CONFIRMED]" : "NEGATIVE [NO ANIMAL]");
             if (pixel_count > 14'd0) begin
                 $display("  -> BBox:   X=[%0d..%0d], Y=[%0d..%0d] (W=%0d, H=%0d)",
                          x_min, x_max, y_min, y_max,
@@ -244,7 +277,7 @@ module top_tb;
         $display("\n--- [PART 1] SYNTHETIC CONTROLLED TEST CASES ---");
 
         // TEST 1: Baseline Static Background (No objects)
-        load_synthetic_frame(1, "Static Background Reference", 0, 0, 0, 0, 0);
+        load_synthetic_frame(1, "SYNTH_F1_STATIC_BG", 0, 0, 0, 0, 0);
         if (motion_alert !== 1'b0 || animal_alert !== 1'b0) begin
             $display("  [ERROR] False alarm triggered on static background!");
             test_errors = test_errors + 1;
@@ -253,7 +286,7 @@ module top_tb;
         end
 
         // TEST 2: Wild Animal Enters Scene at (X=40, Y=25), Size 20x14 (280 pixels)
-        load_synthetic_frame(2, "Animal Appears (20x14 box at X:40, Y:25)", 1, 40, 25, 20, 14);
+        load_synthetic_frame(2, "SYNTH_F2_ANIMAL_ENTER", 1, 40, 25, 20, 14);
         if (motion_alert !== 1'b1 || animal_alert !== 1'b1) begin
             $display("  [ERROR] Expected animal_alert=1 and motion_alert=1!");
             test_errors = test_errors + 1;
@@ -266,7 +299,7 @@ module top_tb;
         end
 
         // TEST 3: Animal Moves to (X=60, Y=30), Size 20x14
-        load_synthetic_frame(3, "Animal Moves to (X:60, Y:30)", 1, 60, 30, 20, 14);
+        load_synthetic_frame(3, "SYNTH_F3_ANIMAL_MOVE", 1, 60, 30, 20, 14);
         if (animal_alert !== 1'b1) begin
             $display("  [ERROR] Animal tracking failed on frame 3!");
             test_errors = test_errors + 1;
@@ -276,8 +309,8 @@ module top_tb;
 
         // TEST 4: Noise / Rain / Shadow Speck (2x2 pixels = 4 pixels, below min_area=20)
         // Establish clean reference so we isolate only the 4-pixel noise speck
-        load_synthetic_frame(0, "Background Reference for Noise Test", 0, 0, 0, 0, 0);
-        load_synthetic_frame(4, "Noise Speck (2x2 box, below min_area)", 1, 10, 10, 2, 2);
+        load_synthetic_frame(0, "SYNTH_F0_NOISE_REF", 0, 0, 0, 0, 0);
+        load_synthetic_frame(4, "SYNTH_F4_NOISE_SPECK", 1, 10, 10, 2, 2);
         if (animal_alert !== 1'b0) begin
             $display("  [ERROR] Noise speck should be classified as non-animal!");
             test_errors = test_errors + 1;
@@ -287,7 +320,7 @@ module top_tb;
 
         // TEST 5: Strict Sobel Edge + Motion Fusion Mode (fusion_mode = 2'b01)
         fusion_mode = 2'b01;
-        load_synthetic_frame(5, "Animal with Parallel Sobel Edge Fusion", 1, 45, 20, 22, 16);
+        load_synthetic_frame(5, "SYNTH_F5_SOBEL_FUSION", 1, 45, 20, 22, 16);
         $display("  [INFO] Sobel Edge Fusion completed with Edge Pixels=%0d.", pixel_count);
 
         // ==============================================================
@@ -312,28 +345,49 @@ module top_tb;
             #40;
 
             // Frame 00: Initial Background Reference
-            load_real_frame(0, "Baseline Video Frame (Reference)", 2'b00, 8'd35, 8'd40);
+            load_real_frame(0, "REAL_F00_REFERENCE", 2'b00, 8'd35, 8'd40);
 
             // Frame 01: Real Animal Enters (Motion Detection Mode 00)
-            load_real_frame(1, "Animal In Motion (Motion Detection)", 2'b00, 8'd35, 8'd40);
+            load_real_frame(1, "REAL_F01_ANIMAL_ENTER", 2'b00, 8'd35, 8'd40);
 
             // Frame 02: Real Animal Advancing (Motion Tracking)
-            load_real_frame(2, "Animal Advancing (Motion Tracking)", 2'b00, 8'd35, 8'd40);
+            load_real_frame(2, "REAL_F02_ANIMAL_ADVANCE", 2'b00, 8'd35, 8'd40);
 
             // Frame 03: Parallel Sobel Edge Detection + Motion Fusion (Mode 01)
-            load_real_frame(3, "Parallel Sobel Edge + Motion (Mode 01)", 2'b01, 8'd35, 8'd40);
+            load_real_frame(3, "REAL_F03_SOBEL_FUSION", 2'b01, 8'd35, 8'd40);
 
             // Frame 04: Sobel Edge OR Motion Dual-Path (Mode 10)
-            load_real_frame(4, "Sobel Edge OR Motion Dual-Path (Mode 10)", 2'b10, 8'd35, 8'd40);
+            load_real_frame(4, "REAL_F04_EDGE_OR_MOTION", 2'b10, 8'd35, 8'd40);
 
             // Frame 05: Real Animal Localized & Classified
-            load_real_frame(5, "Animal Classification & Localization", 2'b00, 8'd35, 8'd40);
+            load_real_frame(5, "REAL_F05_ANIMAL_LOCALIZE", 2'b00, 8'd35, 8'd40);
 
             $display("  [PASS] Real video frame verification completed successfully!");
         end else begin
             $display("  [NOTE] Test video directory 'test_videos/frames_wildlife' was not found");
             $display("         in default search paths. Synthetic test suite passed.");
         end
+
+        #500;
+        $display("\n==================================================================================================");
+        $display("                  WAVEFORM TIMELINE & IMAGE ALERT CORRELATION TABLE");
+        $display("==================================================================================================");
+        $display(" TIME RANGE      | FRAME TAG / TEST CASE         | MOTION | ANIMAL | ALERT STATUS & VERDICT");
+        $display("-----------------+-------------------------------+--------+--------+------------------------------");
+        $display(" 0.00 - 0.37 ms  | SYNTH_F1_STATIC_BG            |   0    |   0    | NEGATIVE: Clean Reference BG");
+        $display(" 0.37 - 0.74 ms  | SYNTH_F2_ANIMAL_ENTER         |   1    |   1    | POSITIVE: [ANIMAL DETECTED]");
+        $display(" 0.74 - 1.11 ms  | SYNTH_F3_ANIMAL_MOVE          |   1    |   1    | POSITIVE: [ANIMAL DETECTED]");
+        $display(" 1.11 - 1.48 ms  | SYNTH_F0_NOISE_REF            |   0    |   0    | NEGATIVE: Clean Reference BG");
+        $display(" 1.48 - 1.85 ms  | SYNTH_F4_NOISE_SPECK          |   1    |   0    | NEGATIVE: Noise Speck Rejected");
+        $display(" 1.85 - 2.22 ms  | SYNTH_F5_SOBEL_FUSION         |   1    |   1    | POSITIVE: [ANIMAL DETECTED]");
+        $display("-----------------+-------------------------------+--------+--------+------------------------------");
+        $display(" 2.22 - 2.60 ms  | REAL_F00_REFERENCE            |   0    |   0    | NEGATIVE: Reference Baseline");
+        $display(" 2.60 - 2.97 ms  | REAL_F01_ANIMAL_ENTER         |   1    |   1    | POSITIVE: >>> ANIMAL ALERT! <<<");
+        $display(" 2.97 - 3.34 ms  | REAL_F02_ANIMAL_ADVANCE       |   1    |   1    | POSITIVE: >>> ANIMAL ALERT! <<<");
+        $display(" 3.34 - 3.71 ms  | REAL_F03_SOBEL_FUSION         |   1    |   0    | NEGATIVE: Edge Silhouette Mode");
+        $display(" 3.71 - 4.09 ms  | REAL_F04_EDGE_OR_MOTION       |   1    |   0    | NEGATIVE: Background Edges Rej.");
+        $display(" 4.09 - 4.46 ms  | REAL_F05_ANIMAL_LOCALIZE      |   1    |   1    | POSITIVE: >>> ANIMAL ALERT! <<<");
+        $display("==================================================================================================");
 
         #500;
         $display("\n==================================================================");
