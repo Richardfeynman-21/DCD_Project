@@ -1,0 +1,13 @@
+# =========================================================================
+# Python Requirements for FPGA Wildlife Detection Project
+# =========================================================================
+
+# Core Image Processing & Computer Vision
+opencv-python>=4.6.0
+numpy>=1.24.0
+
+# Plotting & Publication Figure Generation
+matplotlib>=3.6.0
+
+# Optional: Automated PDF Test Report Generation
+reportlab>=3.6.0
