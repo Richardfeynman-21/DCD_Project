@@ -1,0 +1,17 @@
+\begin{table*}[t]
+\centering
+\caption{FPGA Hardware Pipeline Stage Metrics and Verification Results (Artix-7 XC7A35T)}
+\label{tab:fpga_pipeline_metrics}
+\begin{tabular}{|l|l|c|c|c|l|}
+\hline
+\textbf{Pipeline Stage} & \textbf{Hardware Module} & \textbf{Resolution} & \textbf{Active Pixels} & \textbf{Latency} & \textbf{Description} \\ \hline
+1. Raw Frame Read & \texttt{frame\_memory.v} & $128 \times 72$ & 9,216 & 1 cycle & Dual-port synchronous BRAM buffer \\ \hline
+2. Motion Differencing & \texttt{motion\_detect.v} & $128 \times 72$ & 183 & 2 cycles & Temporal difference ($|F_t - F_{t-1}| \ge 35$) \\ \hline
+3. Sobel Edge Detector & \texttt{sobel\_edge\_detect.v} & $128 \times 72$ & 1,420 & 130 cycles & $3 \times 3$ Line buffer kernel ($|G_x| + |G_y| \ge 40$) \\ \hline
+4. Edge-Motion Fusion & \texttt{fusion.v} & $128 \times 72$ & 183 & 1 cycle & Delay-compensated spatiotemporal merge \\ \hline
+5. Persistence Filter & \texttt{shadow\_suppress.v} & $128 \times 72$ & 183 & 2 cycles & $9216 \times 3$-bit BRAM stability filter \\ \hline
+6. Bounding Box & \texttt{bbox\_centroid.v} & $128 \times 72$ & $W=71, H=22$ & 1 cycle & Extracted extents [$X: 46..116, Y: 45..66$] \\ \hline
+7. Centroid Calculation & \texttt{divider.v} & $128 \times 72$ & $(77, 54)$ & 14 cycles & 14-bit Restoring binary hardware divider \\ \hline
+8. Classifier Engine & \texttt{classifier.v} & 183 & \textbf{Animal = 1} & 1 cycle & 5 Morphological rules evaluated in parallel \\ \hline
+\end{tabular}
+\end{table*}

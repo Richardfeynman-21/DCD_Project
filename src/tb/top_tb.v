@@ -81,8 +81,38 @@ module top_tb;
     reg [7:0]    real_frame_mem [0:9215];
     reg [2047:0] resolved_frame_dir;
     reg [2047:0] current_frame_path;
+    reg [2047:0] resolved_dump_dir;
+    reg [2047:0] dump_file_path;
     integer      real_frames_available;
     integer      dir_check_fp;
+
+    // Hardware Bit-Exact Memory Buffers for Intermediate Layer Dumps
+    reg [7:0]  hw_raw_mem    [0:9215];
+    reg [7:0]  hw_motion_mem [0:9215];
+    reg [7:0]  hw_sobel_mem  [0:9215];
+    reg [7:0]  hw_mag_mem    [0:9215];
+    reg [7:0]  hw_fusion_mem [0:9215];
+    reg [7:0]  hw_stable_mem [0:9215];
+
+    // Synchronous Hardware Sampling of Internal RTL Pipeline Stages
+    always @(posedge clk) begin
+        if (uut.rd_valid_d1) begin
+            hw_raw_mem[uut.rd_addr_d1] <= uut.curr_pixel;
+        end
+        if (uut.motion_valid) begin
+            hw_motion_mem[uut.addr_shift[0]] <= uut.motion_pixel ? 8'hFF : 8'h00;
+        end
+        if (uut.edge_valid) begin
+            hw_sobel_mem[uut.addr_shift[130]] <= uut.edge_pixel ? 8'hFF : 8'h00;
+            hw_mag_mem[uut.addr_shift[130]]   <= (uut.edge_magnitude > 16'd255) ? 8'hFF : uut.edge_magnitude[7:0];
+        end
+        if (uut.fused_valid) begin
+            hw_fusion_mem[uut.addr_shift[131]] <= uut.fused_pixel ? 8'hFF : 8'h00;
+        end
+        if (uut.stable_valid) begin
+            hw_stable_mem[uut.shadow_addr] <= uut.stable_pixel ? 8'hFF : 8'h00;
+        end
+    end
 
     // Task to automatically locate test_videos path across Vivado GUI, CLI, and scripts
     task detect_test_video_path;
@@ -90,6 +120,7 @@ module top_tb;
             real_frames_available = 0;
             // 1. Check current directory / project root first
             resolved_frame_dir = "test_videos/frames_wildlife";
+            resolved_dump_dir  = "test_results/simulation_dumps";
             dir_check_fp = $fopen("test_videos/frames_wildlife/frame_000.mem", "r");
             if (dir_check_fp != 0) begin
                 $fclose(dir_check_fp);
@@ -97,6 +128,7 @@ module top_tb;
             end else begin
                 // 2. Check 5 levels up (Vivado GUI default xsim directory: vivado_project/DCD_Project.sim/sim_1/behav/xsim)
                 resolved_frame_dir = "../../../../../test_videos/frames_wildlife";
+                resolved_dump_dir  = "../../../../../test_results/simulation_dumps";
                 dir_check_fp = $fopen("../../../../../test_videos/frames_wildlife/frame_000.mem", "r");
                 if (dir_check_fp != 0) begin
                     $fclose(dir_check_fp);
@@ -104,6 +136,7 @@ module top_tb;
                 end else begin
                     // 3. Check 4 levels up
                     resolved_frame_dir = "../../../../test_videos/frames_wildlife";
+                    resolved_dump_dir  = "../../../../test_results/simulation_dumps";
                     dir_check_fp = $fopen("../../../../test_videos/frames_wildlife/frame_000.mem", "r");
                     if (dir_check_fp != 0) begin
                         $fclose(dir_check_fp);
@@ -111,6 +144,7 @@ module top_tb;
                     end else begin
                         // 4. Check 1 level up (scripts directory)
                         resolved_frame_dir = "../test_videos/frames_wildlife";
+                        resolved_dump_dir  = "../test_results/simulation_dumps";
                         dir_check_fp = $fopen("../test_videos/frames_wildlife/frame_000.mem", "r");
                         if (dir_check_fp != 0) begin
                             $fclose(dir_check_fp);
@@ -119,6 +153,69 @@ module top_tb;
                     end
                 end
             end
+        end
+    endtask
+
+    // Task to dump bit-exact hardware pipeline layers to disk
+    task dump_hardware_layers(input integer f_idx);
+        integer d_idx, fp;
+        begin
+            // 1. Raw input frame
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_01_raw.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_raw_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            // 2. Motion differencing mask
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_02_motion.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_motion_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            // 3. Sobel edge binary map
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_03_sobel_edge.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_sobel_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            // 4. Sobel edge magnitude
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_04_sobel_mag.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_mag_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            // 5. Spatiotemporal Edge-Motion Fusion
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_05_fusion.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_fusion_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            // 6. Persistence filter / Shadow suppression
+            $sformat(dump_file_path, "%0s/hw_sim_frame_%03d_06_stable.mem", resolved_dump_dir, f_idx);
+            fp = $fopen(dump_file_path, "w");
+            if (fp != 0) begin
+                for (d_idx = 0; d_idx < 9216; d_idx = d_idx + 1)
+                    $fdisplay(fp, "%02h", hw_stable_mem[d_idx]);
+                $fclose(fp);
+            end
+
+            $display("  -> [HW-DUMP] RTL Intermediate stages dumped to: %0s/hw_sim_frame_%03d_*.mem",
+                     resolved_dump_dir, f_idx);
         end
     endtask
 
@@ -208,6 +305,15 @@ module top_tb;
             $readmemh(current_frame_path, real_frame_mem);
 
             for (addr = 0; addr < 9216; addr = addr + 1) begin
+                hw_raw_mem[addr]    = 8'd0;
+                hw_motion_mem[addr] = 8'd0;
+                hw_sobel_mem[addr]  = 8'd0;
+                hw_mag_mem[addr]    = 8'd0;
+                hw_fusion_mem[addr] = 8'd0;
+                hw_stable_mem[addr] = 8'd0;
+            end
+
+            for (addr = 0; addr < 9216; addr = addr + 1) begin
                 @(posedge clk);
                 load_en    <= 1'b1;
                 pixel_addr <= addr[13:0];
@@ -238,6 +344,9 @@ module top_tb;
             end else begin
                 $display("  -> BBox:   No active motion detected (Pixels=0)");
             end
+
+            // Dump bit-exact hardware intermediate stages for report figures
+            dump_hardware_layers(f_idx);
         end
     endtask
 
